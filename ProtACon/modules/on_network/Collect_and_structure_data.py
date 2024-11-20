@@ -4,9 +4,13 @@
 __email__ = 'renatoeliasy@gmail.com'
 __author__ = 'Renato Eliasy'
 
-from ProtACon.modules.miscellaneous import get_AA_features_dataframe, CA_Atom, protein_reference_point, read_pdb_file, extract_CA_Atoms
+from ProtACon.modules.miscellaneous import get_AA_features_dataframe, CA_Atom, protein_reference_point, extract_CA_Atoms
 from ProtACon.modules import miscellaneous
-
+import warnings
+from Bio.PDB.PDBParser import PDBParser
+from Bio.PDB.PDBExceptions import PDBConstructionWarning
+from pathlib import Path
+from ProtACon import config_parser
 import pandas as pd
 import numpy as np
 import torch
@@ -33,7 +37,17 @@ class Protein_id:
     def extract_bio_features(
             self,
     ) -> dict:
-        structure = read_pdb_file(self.name_id)
+        config_file_path = Path(__file__).resolve().parents[3]/"config.txt"
+        config = config_parser.Config(config_file_path)
+
+        paths = config.get_paths()
+        pdb_folder = paths["PDB_FOLDER"]
+        pdb_dir = Path(__file__).resolve().parents[1]/pdb_folder
+        file_path = pdb_dir/f"pdb{self.name_id.lower()}.ent"
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', PDBConstructionWarning)
+            structure = PDBParser().get_structure(self.name_id, file_path)
         CA_Atoms = extract_CA_Atoms(structure)
         protein_dict = protein_reference_point(CA_Atoms=CA_Atoms)
         protein_dict['head_att_x'] = self.first_ten_attention_score
