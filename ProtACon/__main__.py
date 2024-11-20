@@ -327,7 +327,7 @@ def main():
                                     CA_Atoms=CA_Atoms,
                                     base_Graph=base_graph,
                                     resolution=resolution
-                                ) # can use edge_weights_combination = edge_weights
+                                )  # can use edge_weights_combination = edge_weights
                         except AttributeError:
                             log.logger.warning(
                                 "Cannot build the graph... Skipping"
@@ -700,82 +700,7 @@ def main():
                                     save_option=False)
 
     if args.subparser == 'test_this':
-        if args.testing:
-            print(f'Test this {args.testing} feature')
-        else:
-            print('No test to run')
-        code = '6NJC'
-        seq_dir = net_dir/code
-        seq_dir.mkdir(parents=True, exist_ok=True)
-
-        with (
-            Timer(f"Running time for [yellow]{code}[/yellow]"),
-            torch.no_grad(),
-        ):
-
-            attention, att_head_sum, CA_Atoms, amino_acid_df, att_to_aa = \
-                preprocess.main(code, model, tokenizer, save_opt="plot")
-
-            min_residues = 5
-            if len(CA_Atoms) < min_residues:
-                raise Exception(
-                    f"Chain {code} has less than {min_residues} valid "
-                    "residues... Aborting"
-                )
-
-            _, _, binary_contact_map = process_contact.main(CA_Atoms)
-
-            layouts = {
-                "node_color": 'AA_local_isoPH',
-                "edge_color": 'contact_in_sequence',
-                "edge_style": 'instability',
-                "node_size": 'AA_Volume'
-            }
-            positional_aa = Collect_and_structure_data.generate_index_df(
-                CA_Atoms=CA_Atoms)
-            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
-                CA_Atoms=CA_Atoms)
-            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
-                df_prepared_for_pca=df_for_pca)
-            base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)
-
-            if 'louv' in args.testing:
-                louvain_graph, louvain_labels, louvain_attention_map = sum_up.get_louvain_results(
-                    CA_Atoms=CA_Atoms, base_Graph=base_graph, resolution=resolution)  # can use edge_weights_combination = edge_weights
-                cluster_label = louvain_labels
-                binmap = louvain_attention_map
-            elif 'km' in args.testing:
-                _, kmean_labels_dict, km_attention_map = sum_up.get_kmeans_results(
-                    CA_Atoms=CA_Atoms)
-                cluster_label = kmean_labels_dict
-                binmap = km_attention_map
-
-            feature_dataframe = get_AA_features_dataframe(CA_Atoms=CA_Atoms)
-            prot_6njc = Protein_id(name_id=code)
-            prot_prop_dict = prot_6njc.extract_bio_features()
-
-            '''pos_x_networks = {n: (x, y) for n, x, y in zip(
-                base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
-
-            netviz.draw_network(network_graph=base_graph,
-                                pos=pos_x_networks,
-                                clusters_color_group=cluster_label,
-                                edge_color='contact_in_sequence',
-                                edge_style='instability',
-                                node_size='AA_Volume',
-                                label=('bold', 5),
-                                save_option=False)
-            color_map = cluster_label
-            netviz.plot_histogram_pca(percentage_var=percentage_compatibility,
-                                      best_features=pca_components, protein_name=str(code), save_option=False)
-            netviz.plot_pca_2d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
-                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-            netviz.plot_pca_3d(pca_dataframe=pca_df, protein_name=str(code), best_features=pca_components,
-                               percentage_var=percentage_compatibility, color_map=color_map, save_option=False)
-            list_attr_node, _ = netly.get_node_atttribute_list(G=louvain_graph)
-            print(list_attr_node)
-            '''
+        pass
 
 
 if __name__ == '__main__':
