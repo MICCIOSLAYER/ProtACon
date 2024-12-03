@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 from Bio.PDB.PDBList import PDBList
+import pandas as pd
 import numpy as np
 import torch
 
@@ -700,7 +701,52 @@ def main():
                                     save_option=False)
 
     if args.subparser == 'test_this':
-        pass
+        inst_att_df = pd.read_csv(
+            "inst_att_df_tot.csv", header=0, index_col=0, sep=';')
+        km_att_df = pd.read_csv("km_att_df_tot.csv", sep=';')
+        louv_att_df = pd.read_csv("louv_att_df_tot.csv", sep=';')
+        prot_prop_df = pd.read_csv("protein_features.csv", sep=';')
+        prot_prop_df.drop(columns=["mono isotopic"], inplace=True)
+        prot_prop_df.rename(columns={'length': 'lenght'}, inplace=True)
+        prot_prop_df.set_index('code', inplace=True)
+        # adjust the flexibility data from list to float
+        prot_flex = []
+        for list_flexibility in prot_prop_df['flexibility']:
+            flexibility = [np.sum(float(x))
+                           for x in list_flexibility[1:-1].split(',')]
+            prot_flex.append(flexibility)
+        print(prot_flex[:4])
+        inst_att_df_pca = []
+        for col in inst_att_df.columns:
+            inst_att = pd.concat([prot_prop_df, inst_att_df[col]], axis=1)
+            inst_att_df_pca.append(inst_att)
+
+        prot_louv_att_df = pd.concat([prot_prop_df, louv_att_df], axis=1)
+        prot_km_att_df = pd.concat([prot_prop_df, km_att_df], axis=1)
+        # do the pca considering the attention of
+        first = inst_att_df_pca[0]
+        result = (all(isinstance(x, int) for x in first.values.flatten()) or all(
+            isinstance(x, float) for x in first.values.flatten()))
+        # print(prot_prop_df['flexibility'])
+        '''for i, inst_att in enumerate(inst_att_df_pca):
+            pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
+                inst_att.values)
+            netviz.plot_pca_2d(
+                pca_dataframe=pca_df,
+                protein_name=f'instability {i}',
+                best_features=pca_components,
+                percentage_var=percentage_compatibility,
+                color_map=None,
+                save_option=False
+            )'''
+        '''netviz.plot_pca_3d(
+                pca_dataframe=pca_df,
+                protein_name=str(args.code),
+                best_features=pca_components,
+                percentage_var=percentage_compatibility,
+                color_map=None,
+                save_option=False
+            )'''
 
 
 if __name__ == '__main__':
