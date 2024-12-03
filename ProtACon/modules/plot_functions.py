@@ -460,6 +460,20 @@ def get_histogram_x_prots(protein_dataset: list[Protein_id] | pd.DataFrame,
                           ) -> dict:
     '''
     plot the histogram respecting the feature of the proteins in the list
+
+    Parameters
+    ----------
+    protein_dataset : list[Protein_id] | pd.DataFrame
+        The list of proteins or the DataFrame with the proteins information.
+    feature : str | pd.Series, optional
+        the feature to plot the histogram for. The default is ''.
+    plot : bool, optional
+        if True, the histogram will be plotted. The default is False
+
+    Returns
+    -------
+    hist_datas : dict
+        dictionary with the histogram data for the feature.
     '''
     if isinstance(protein_dataset, list):
         protein_df = df_for_prot(protein_dataset)
