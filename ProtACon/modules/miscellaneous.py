@@ -619,26 +619,26 @@ def web_group_classification(
 
     """
     web_groups = {
-        'A': 'G1',
-        'L': 'G1',
-        'I': 'G1',
-        'V': 'G1',
-        'P': 'G1',
-        'M': 'G1',
-        'F': 'G1',
-        'W': 'G1',
-        'S': 'G2',
-        'T': 'G2',
-        'Y': 'G2',
-        'N': 'G2',
-        'Q': 'G2',
-        'C': 'G2',
-        'G': 'G2',
-        'K': 'G3',
-        'H': 'G3',
-        'R': 'G3',
-        'D': 'G4',
-        'E': 'G4',
+        'A': 'G1',  # non polar
+        'L': 'G1',  # non polar
+        'I': 'G1',  # non polar
+        'V': 'G1',  # non polar
+        'P': 'G1',  # non polar
+        'M': 'G1',  # non polar
+        'F': 'G1',  # non polar
+        'W': 'G1',  # non polar
+        'S': 'G2',  # polar
+        'T': 'G2',  # polar
+        'Y': 'G2',  # polar
+        'N': 'G2',  # polar
+        'Q': 'G2',  # polar
+        'C': 'G2',  # polar
+        'G': 'G2',  # polar
+        'K': 'G3',  # positive charged
+        'H': 'G3',  # positive charged
+        'R': 'G3',  # positive charged
+        'D': 'G4',  # negative charged
+        'E': 'G4',  # negative charged
     }
     if len(aa_name) != 1:
         raise ValueError('The amino acid must be a one-value-letter')
