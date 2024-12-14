@@ -760,11 +760,13 @@ def main():
                     )
                 color_map = louvain_labels
                 binmap = louvain_attention_map
+                tilte = 'louv_map'
             elif 'km' in args.testing:
                 kmeans_df, kmean_labels, km_attention_map = \
                     sum_up.get_kmeans_results(CA_Atoms)
                 color_map = kmean_labels
                 binmap = km_attention_map
+                title = 'kmeans_map'
             elif 'inst' in args.testing:
                 inst_map, bin_inst_map, inst_contact_map = process_instability.main(
                     CA_Atoms)
@@ -773,6 +775,7 @@ def main():
                 names = ['inst_map', 'bin_inst_map', 'bin_inst_contact_map']
                 for i, map in enumerate([inst_map, bin_inst_map, inst_contact_map]):
                     plt.imshow(map)
+                    title = 'inst'
                     plt.title(f'{code} -> {names[i]}')
                     if 'bin' in names[i]:
                         plt.set_cmap('binary')
@@ -782,7 +785,12 @@ def main():
                         plt.colorbar()
                     plt.savefig(seq_dir/f'{code}_{names[i]}.png')
                     plt.show()
-
+            plt.imshow(binmap)
+            plt.title(f'{code} -> {title}')
+            plt.set_cmap('binary')
+            plt.colorbar()
+            plt.savefig(seq_dir/f'{code}_{title}.png')
+            plt.show()
         '''for i, inst_att in enumerate(inst_att_df_pca):
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 inst_att.values)
