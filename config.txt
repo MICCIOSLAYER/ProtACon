@@ -1,3 +1,5 @@
+# Config parsing
+
 [cutoffs]
 ATTENTION_CUTOFF = 0.1
 DISTANCE_CUTOFF = 8.0
