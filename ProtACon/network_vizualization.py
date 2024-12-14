@@ -113,7 +113,8 @@ def plot_pca_2d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     None, but plot a scatter plot 2d
 
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
     folder_path = Path(__file__).resolve().parents[1]/networks_path
@@ -199,7 +200,8 @@ def plot_pca_3d(pca_dataframe: pd.DataFrame,  # dataframe from which take the co
     -------
     None, but plot a scatter plot 3D
     """
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
     folder_name = config.get_paths()
     networks_path = folder_name["NET_FOLDER"]
     folder_path = Path(__file__).resolve().parents[1]/networks_path
@@ -498,7 +500,8 @@ def plot_protein_3D(CA_Atoms: tuple[CA_Atom, ...],
 
     fig = go.Figure(data=data, layout=layout)
 
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
     path_name = config.get_paths()
     networks_path = path_name["NET_FOLDER"]
     folder_path = Path(__file__).resolve().parent/networks_path
@@ -759,7 +762,8 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],  # 2.0 version
 
     data = [trace1, trace2, trace3, trace_node]
     fig = go.Figure(data=data, layout=layout)
-    config = config_parser.Config("config.txt")
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
+    config = config_parser.Config(config_file_path)
     path_name = config.get_paths()
     networks_path = path_name["NET_FOLDER"]
     folder_path = Path(__file__).resolve().parent/networks_path
@@ -848,7 +852,7 @@ def draw_network(network_graph: nx.Graph,
     a plot network
 
     """
-    config_file_path = Path(__file__).resolve().parent/"config.txt"
+    config_file_path = Path(__file__).resolve().parents[1]/"config.txt"
     config = config_parser.Config(config_file_path)
     cutoffs = config.get_cutoffs()
     instability_cutoff = cutoffs['INSTABILITY_CUTOFF']
@@ -881,6 +885,7 @@ def draw_network(network_graph: nx.Graph,
     if len(clusters_color_group.keys()):
         node_color_layout = [clusters_color_group[node]
                              for node in network_graph.nodes()]
+
     else:
         node_color_layout = [network_graph.nodes[node][node_color]
                              for node in network_graph.nodes()]
