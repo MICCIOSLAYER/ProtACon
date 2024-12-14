@@ -42,7 +42,7 @@ from ProtACon import plotting
 from ProtACon import preprocess
 from ProtACon import process_contact
 from ProtACon import process_instability
-
+import matplotlib.pyplot as plt
 from ProtACon.modules.on_network import summarize_results_for_main as sum_up
 from ProtACon.modules.on_network import PCA_computing_and_results, Collect_and_structure_data
 from ProtACon.modules.on_network.Collect_and_structure_data import Protein_id
@@ -768,12 +768,21 @@ def main():
             elif 'inst' in args.testing:
                 inst_map, bin_inst_map, inst_contact_map = process_instability.main(
                     CA_Atoms)
-            sum_up.plot_the_3D_chain(
-                CA_Atoms=CA_Atoms,
-                protein_name=code,
-                node_colors=color_map,
-                save_option=True
-            )
+                inst_map, bin_inst_map, inst_contact_map = process_instability.main(
+                    CA_Atoms=CA_Atoms)
+                names = ['inst_map', 'bin_inst_map', 'bin_inst_contact_map']
+                for i, map in enumerate([inst_map, bin_inst_map, inst_contact_map]):
+                    plt.imshow(map)
+                    plt.title(f'{code} -> {names[i]}')
+                    if 'bin' in names[i]:
+                        plt.set_cmap('binary')
+                        plt.colorbar()
+                    else:
+                        plt.set_cmap('hot')
+                        plt.colorbar()
+                    plt.savefig(seq_dir/f'{code}_{names[i]}.png')
+                    plt.show()
+
         '''for i, inst_att in enumerate(inst_att_df_pca):
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 inst_att.values)
