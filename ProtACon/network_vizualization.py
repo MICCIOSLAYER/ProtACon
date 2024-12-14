@@ -510,7 +510,7 @@ def plot_protein_3D(CA_Atoms: tuple[CA_Atom, ...],
                 save_path = folder_path / protein_name / \
                     f'3D_protein_chain({i}).png'
             else:
-                fig.savefig(save_path)
+                fig.write_image(save_path)
 
     """ if save_path.isfile():
         path = folder_path / protein_name.upper() / "3D_protein_chain(1).png"
@@ -769,11 +769,11 @@ def plot_protein_chain_3D(CA_Atoms: tuple[CA_Atom, ...],  # 2.0 version
         for i in range(3):
             if os.path.isfile(str(save_path)):
                 save_path = folder_path / protein_name / \
-                    f'3D_protein_chain({i}).png'
+                    f'3D_protein_chain({i}).html'
             else:
-                fig.savefig(save_path)
+                fig.write_html(save_path)
     fig.show()
-    pass
+    return None
 
 
 def calculate_rgb_edge_color(edge: tuple[int, int],

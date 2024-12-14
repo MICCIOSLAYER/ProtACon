@@ -104,7 +104,7 @@ def parse_args():
     )
     # positional arguments
     on_chain.add_argument(
-        "chain_code",
+        "code",
         type=str,
         help="code of the input peptide chain",
     )
@@ -701,33 +701,79 @@ def main():
                                     save_option=False)
 
     if args.subparser == 'test_this':
-        inst_att_df = pd.read_csv(
-            "inst_att_df_tot.csv", header=0, index_col=0, sep=';')
-        km_att_df = pd.read_csv("km_att_df_tot.csv", sep=';')
-        louv_att_df = pd.read_csv("louv_att_df_tot.csv", sep=';')
-        prot_prop_df = pd.read_csv("protein_features.csv", sep=';')
-        prot_prop_df.drop(columns=["mono isotopic"], inplace=True)
-        prot_prop_df.rename(columns={'length': 'lenght'}, inplace=True)
-        prot_prop_df.set_index('code', inplace=True)
-        # adjust the flexibility data from list to float
-        prot_flex = []
-        for list_flexibility in prot_prop_df['flexibility']:
-            flexibility = [np.sum(float(x))
-                           for x in list_flexibility[1:-1].split(',')]
-            prot_flex.append(flexibility)
-        print(prot_flex[:4])
-        inst_att_df_pca = []
-        for col in inst_att_df.columns:
-            inst_att = pd.concat([prot_prop_df, inst_att_df[col]], axis=1)
-            inst_att_df_pca.append(inst_att)
+        code = '6NJC'
+        seq_dir = net_dir/code
+        seq_dir.mkdir(parents=True, exist_ok=True)
 
-        prot_louv_att_df = pd.concat([prot_prop_df, louv_att_df], axis=1)
-        prot_km_att_df = pd.concat([prot_prop_df, km_att_df], axis=1)
-        # do the pca considering the attention of
-        first = inst_att_df_pca[0]
-        result = (all(isinstance(x, int) for x in first.values.flatten()) or all(
-            isinstance(x, float) for x in first.values.flatten()))
-        # print(prot_prop_df['flexibility'])
+        proteins = config.get_proteins()
+        min_residues = proteins["MIN_RESIDUES"]
+
+        with (
+            Timer(f"Running time for [yellow]{code}[/yellow]"),
+            torch.no_grad(),
+        ):
+
+            _, _, CA_Atoms, amino_acid_df, _ = \
+                preprocess.main(code, model, tokenizer, save_opt="both")
+
+            if len(CA_Atoms) < min_residues:
+                raise Exception(
+                    f"Chain {code} has less than {min_residues} valid "
+                    "residues... Aborting"
+                )
+
+            chain_amino_acids = amino_acid_df["Amino Acid"].to_list()
+            _, _, binary_contact_map = process_contact.main(CA_Atoms)
+
+            positional_aa = Collect_and_structure_data.generate_index_df(
+                CA_Atoms=CA_Atoms
+            )
+            # register the layout for node and color
+            layouts = {
+                "node_color": 'ph_local',
+                "edge_color": 'instability',
+                "edge_style": 'sequence_adjancency',
+                "node_size": 'volume'
+            }
+
+            # in any case calculate the pca to get the 3 main components, to use as coords of a scatter plot
+            df_for_pca = Collect_and_structure_data.get_dataframe_for_PCA(
+                CA_Atoms=CA_Atoms
+            )
+            pca_df, pca_components, percentage_compatibility = \
+                PCA_computing_and_results.main(df_for_pca)
+
+            if 'louv' in args.testing:
+                base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map
+                )
+                edge_weights = {
+                    'contact_in_sequence': 0,
+                    'lenght': 1,
+                    'instability': 0
+                }
+                louvain_graph, louvain_labels, louvain_attention_map = \
+                    sum_up.get_louvain_results(
+                        CA_Atoms=CA_Atoms,
+                        base_Graph=base_graph,
+                        resolution=resolution
+                    )
+                color_map = louvain_labels
+                binmap = louvain_attention_map
+            elif 'km' in args.testing:
+                kmeans_df, kmean_labels, km_attention_map = \
+                    sum_up.get_kmeans_results(CA_Atoms)
+                color_map = kmean_labels
+                binmap = km_attention_map
+            elif 'inst' in args.testing:
+                inst_map, bin_inst_map, inst_contact_map = process_instability.main(
+                    CA_Atoms)
+            sum_up.plot_the_3D_chain(
+                CA_Atoms=CA_Atoms,
+                protein_name=code,
+                node_colors=color_map,
+                save_option=True
+            )
         '''for i, inst_att in enumerate(inst_att_df_pca):
             pca_df, pca_components, percentage_compatibility = PCA_computing_and_results.main(
                 inst_att.values)
@@ -738,15 +784,15 @@ def main():
                 percentage_var=percentage_compatibility,
                 color_map=None,
                 save_option=False
-            )'''
-        '''netviz.plot_pca_3d(
+            )
+            netviz.plot_pca_3d(
                 pca_dataframe=pca_df,
                 protein_name=str(args.code),
                 best_features=pca_components,
                 percentage_var=percentage_compatibility,
                 color_map=None,
                 save_option=False
-            )'''
+        )'''
 
 
 if __name__ == '__main__':

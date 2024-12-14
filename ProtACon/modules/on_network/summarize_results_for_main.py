@@ -266,7 +266,7 @@ def plot_the_3D_chain(CA_Atoms: tuple[CA_Atom, ...],
     instability_edges = np.argwhere(bin_inst_map == 1)  # in int format
     sequential_edges = []
     for i in range(0, len(positional_aa)-1):
-        sequential_edges.append((i, i+1))  # in nit format
+        sequential_edges.append((i, i+1))  # in int format
     features_edge = [first_feature_edge,
                      second_feature_edge, third_feature_edge]
     edges_feature = [contact_edges, sequential_edges, instability_edges]
@@ -286,6 +286,4 @@ def plot_the_3D_chain(CA_Atoms: tuple[CA_Atom, ...],
                                  color_feature=df_col_feature,
                                  protein_name=protein_name,
                                  save_option=save_option)
-    # FIXME rifare da qui la funzione di plot 3D considerando le modifiche su net-work
-    # dato che troppo complessa da spacchettare avendo il edge_layout da cui prendere gli estremidegli edges
-    # è più facile se ricominciamo tenendo conto delle modifiche piuttosto che non cambiare quello che già c'è
+    return None
