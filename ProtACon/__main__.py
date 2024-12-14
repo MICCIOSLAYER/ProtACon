@@ -108,15 +108,7 @@ def parse_args():
         type=str,
         help="code of the input peptide chain",
     )
-    on_chain.add_argument(
-        "align_with",
-        type=str,
-        choices=("contact", "instability", "kmeans", "louvain"),
-        nargs="+",
-        help="get the attention alignment with the contact map, the "
-        "instability index map, the clusters found with the k-means algorithm,"
-        " and/or the communities found with the Louvain method",
-    )
+
     # positional NOTE to further informations see commit 7d90661
     on_chain.add_argument(
         "plot_type",
@@ -166,6 +158,11 @@ def parse_args():
         default="volume",
         choices=["charge", "radius_of_gyration", "surface", "volume"],
         help="size of the nodes in the plots",
+    )
+    on_chain.add_argument(
+        "-pp", "--pca_position",
+        action="store_true",
+        help="if present, get the position of the nodes respecting the pca"
     )
     # optional arguments
     on_chain.add_argument(
@@ -316,11 +313,8 @@ def main():
                         _, _, binary_contact_map = process_contact.main(
                             CA_Atoms
                         )
-                        base_graph, resolution = \
-                            sum_up.prepare_complete_graph_nx(
-                                CA_Atoms=CA_Atoms,
-                                binary_map=binary_contact_map
-                            )  # TODO: check the indexing
+                        base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                            CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO: check the indexing
 
                         try:
                             _, _, louvain_attention_map = \
@@ -609,6 +603,8 @@ def main():
             )
             pca_df, pca_components, percentage_compatibility = \
                 PCA_computing_and_results.main(df_for_pca)
+            base_graph, resolution = sum_up.prepare_complete_graph_nx(
+                CA_Atoms=CA_Atoms, binary_map=binary_contact_map)  # TODO: check the indexing
 
             if args.analyze == "kmeans":
                 kmeans_df, kmean_labels, km_attention_map = \
@@ -618,9 +614,7 @@ def main():
                     sum_up.get_partition_results(CA_Atoms, df=kmeans_df)
 
             elif args.analyze == "louvain":
-                base_graph, resolution = sum_up.prepare_complete_graph_nx(
-                    CA_Atoms=CA_Atoms, binary_map=binary_contact_map
-                )
+
                 edge_weights = {
                     'contact_in_sequence': 0,
                     'lenght': 1,
@@ -637,7 +631,9 @@ def main():
                     sum_up.get_partition_results(CA_Atoms, df=louvain_labels)
 
             elif args.analyze == "only_pca":
-                color_map = None  # add this option to plot 3d chain and other plotting
+                color_list = [1 for _ in positional_aa]
+
+                color_map = {k: v for k, v in zip(positional_aa, color_list)}
 
             # if vizualization is enabled, it has to plot graph
 
@@ -689,10 +685,13 @@ def main():
                 )
 
             elif args.plot_type == 'network':
-                pos_x_networks = {n: (x, y) for n, x, y in zip(
-                    base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
+                if args.pca_position:
+                    pos = {n: (x, y) for n, x, y in zip(
+                        base_graph.nodes(), pca_df.PC1, pca_df.PC2)}
+                else:
+                    pos = 'kk'
                 netviz.draw_network(network_graph=base_graph,
-                                    pos='kk',  # if possible you can chose to use pca to set node position
+                                    pos=pos,  # if possible you can chose to use pca to set node position
                                     clusters_color_group=color_map,
                                     edge_color='contact_in_sequence',
                                     edge_style='instability',
@@ -765,8 +764,8 @@ def main():
                 kmeans_df, kmean_labels, km_attention_map = \
                     sum_up.get_kmeans_results(CA_Atoms)
                 color_map = kmean_labels
-                binmap = km_attention_map
-                title = 'kmeans_map'
+                binmap = km_attention_map*binary_contact_map
+                title = 'kmeans_contact_map'
             elif 'inst' in args.testing:
                 inst_map, bin_inst_map, inst_contact_map = process_instability.main(
                     CA_Atoms)
