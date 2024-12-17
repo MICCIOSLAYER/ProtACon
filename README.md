@@ -31,4 +31,9 @@ You can launch different scripts by typing in the command line `ProtACon` follow
 From the configuration file `config.txt`, it is possible to set the folder names where to store the plots and the PDB files of the proteins, and also the cutoffs for the thresholding of the contact maps. From there, you can also specify the set of proteins that you want to process with the command `on_set`.
 
 ## Other installation commands
+here the chain 3D of the 6NJC protein:
+
+
+
+https://github.com/user-attachments/assets/605188ca-39d6-44bc-97c7-282cab1cda6d
 
